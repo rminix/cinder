@@ -856,7 +856,15 @@ class LVMVolumeDriver(driver.VolumeDriver):
         self.target_driver.remove_export(context, volume)
 
     def initialize_connection(self, volume, connector):
-        return self.target_driver.initialize_connection(volume, connector)
+        if connector['host'] != volume_utils.extract_host(volume['host'], 'host'):
+            return self.target_driver.initialize_connection(volume, connector)
+        else:
+            return {
+                'driver_volume_type': 'local',
+                'data': {
+                    'device_path': self.local_path(volume)
+                },
+            }
 
     def validate_connector(self, connector):
         return self.target_driver.validate_connector(connector)
